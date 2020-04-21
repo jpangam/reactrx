@@ -1,0 +1,54 @@
+/**
+ * Sample React Native App
+ * https://github.com/facebook/react-native
+ *
+ * @format
+ * @flow strict-local
+ */
+
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,  
+} from 'react-native';
+
+import {from} from 'rxjs';
+import {map, filter, mergeMap, delay} from 'rxjs/operators';
+
+  let numberObservable = from([1,2,3,4,5,10]);
+  let squaredNumbers = numberObservable.pipe(
+    filter(val => val > 0),
+    mergeMap(val=>from([val]).pipe(delay(1000*val))),
+    map(val => val * val)
+  );
+
+  const useObservable = (observable, setter) => {
+    useEffect(()=>{
+      let subscription = observable.subscribe( result => {
+        console.log(result);
+        setter(result);
+      });
+  
+      return ()=>subscription.unsubscribe();
+    },[observable, setter]);
+  }
+
+const App = () => {
+
+  const [number, setNumber] = useState(0);
+
+
+  useObservable(squaredNumbers,setNumber);
+  
+
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Hello : {number}</Text>
+    </View>
+  );
+};
+
+export default App;
+
+
+// https://pokeapi.co/api/v2/pokemon?limit=1000
